@@ -166,12 +166,17 @@ const Dashboard = () => {
       <style>{`
         /* --- ANIMATIONS --- */
         @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
+          0% { transform: translate3d(0px, 0px, 0) scale(1) rotate(0deg); }
+          20% { transform: translate3d(40px, -35px, 0) scale(1.08) rotate(4deg); }
+          40% { transform: translate3d(-30px, -60px, 0) scale(0.95) rotate(-5deg); }
+          60% { transform: translate3d(-55px, 18px, 0) scale(1.12) rotate(3deg); }
+          80% { transform: translate3d(28px, 42px, 0) scale(0.98) rotate(-4deg); }
+          100% { transform: translate3d(0px, 0px, 0) scale(1) rotate(0deg); }
         }
-        .animate-blob { animation: blob 7s infinite; }
+        .animate-blob {
+          animation: blob 12s ease-in-out infinite;
+          will-change: transform;
+        }
         .animation-delay-2000 { animation-delay: 2s; }
         .animation-delay-4000 { animation-delay: 4s; }
 
