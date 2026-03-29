@@ -94,7 +94,7 @@ export default function ActivityRoom() {
     <div className="min-h-screen bg-[#fefcf0] p-4 md:p-8 selection:bg-emerald-200">
       
       {/* Condensed Header */}
-      <header className="max-w-[1600px] mx-auto flex justify-between items-end mb-6 mt-7">
+      <header className="max-w-[1600px] mx-auto flex justify-between items-end mb-10 mt-16">
         <div className="text-left">
           <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-gray-900 leading-none">
             Activity <span className="text-emerald-600">Room</span>
