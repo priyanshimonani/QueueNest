@@ -167,7 +167,7 @@ export function TokenSwap() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl font-semibold">{req.name}</h3>
-                  <span className="bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
                     PENDING
                   </span>
                 </div>
@@ -219,18 +219,18 @@ export function TokenSwap() {
               className="bg-white/70 backdrop-blur border border-white rounded-3xl p-6 flex justify-between items-center shadow-sm"
             >
               <div>
-                <h3 className="font-semibold text-lg">
-                  Request sent
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Status: {req.status}
-                </p>
-                {req.message && (
-                  <p className="text-xs text-gray-400 mt-1 italic">"{req.message}"</p>
-                )}
+                <h3 className="font-semibold text-lg text-gray-800">
+  Swap Request → Token #{req.token || "--"}
+</h3>
+                <p className="text-sm text-gray-500 mt-1">
+  Waiting for response
+</p>
+                <button className="text-xs text-red-500 mt-3 hover:underline">
+  Cancel request
+</button>
               </div>
 
-              <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
                 Pending
               </span>
             </div>

@@ -108,17 +108,30 @@ export function JoinQueue() {
           {/* Subtle glow behind number */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-400/20 blur-[60px] rounded-full group-hover:bg-emerald-400/30 transition-all duration-700"></div>
 
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Your Token</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-3">
+  Now Serving
+</p>
 
-          <motion.div
-            key={currentToken}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative text-7xl font-black text-gray-800 mb-8 tracking-tighter"
-          >
-            <span className="text-4xl align-top text-gray-400 opacity-50 mr-1">#</span>
-            {yourToken}
-          </motion.div>
+<div className="text-3xl font-bold text-gray-700 mb-2">
+  #{currentToken}
+</div>
+
+<motion.div
+  key={currentToken}
+  initial={{ scale: 0.9, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  className={`relative text-7xl font-black mb-6 tracking-tight ${
+    isYourTurn ? "text-emerald-600" : "text-gray-800"
+  }`}
+>
+  #{yourToken}
+</motion.div>
+
+{isYourTurn && (
+  <div className="inline-block px-5 py-2 rounded-full bg-emerald-100 text-emerald-700 font-bold text-lg animate-pulse">
+    👉 Your Turn!
+  </div>
+)}
 
           {/* Fancy Progress Bar */}
           <div className="relative w-full h-3 bg-gray-200/50 rounded-full overflow-hidden">
@@ -142,17 +155,21 @@ export function JoinQueue() {
           animate={{ opacity: 1 }}
           className="text-center mb-12"
         >
-          <span className="inline-block px-6 py-2 rounded-full bg-white/50 backdrop-blur border border-white/60 text-xl font-bold text-gray-700 shadow-sm">
-            {getStatusMessage()}
-          </span>
+          <span className={`inline-block px-6 py-3 rounded-full text-lg font-bold shadow-md transition-all ${
+  isYourTurn
+    ? "bg-emerald-500 text-white animate-bounce"
+    : "bg-white/70 text-gray-700"
+}`}>
+  {getStatusMessage()}
+</span>
         </motion.div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {[
-            { label: "Currently Serving", value: `#${currentToken}`, icon: "🔍" },
-            { label: "People Ahead", value: peopleAhead, icon: "👥" },
-            { label: "Estimated Wait", value: `~${estimatedWait} m`, icon: "⏱️" }
+            { label: "Now Serving", value: `#${currentToken}`, icon: "📢" },
+  { label: "People Ahead", value: peopleAhead === 0 ? "None" : peopleAhead, icon: "👥" },
+  { label: "Wait Time", value: peopleAhead === 0 ? "No wait" : `${estimatedWait} min`, icon: "⏱️" }
           ].map((item, index) => (
             <motion.div
               key={index}
