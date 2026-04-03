@@ -1,147 +1,256 @@
 import Office from "../models/Office.js";
 import Queue from "../models/Queue.js";
+import { broadcastQueueState } from "./queueController.js";
 
-export const createOrUpdateOffice = async (req, res) => {
+const ACTIVE_QUEUE_STATUSES = ["waiting", "serving"];
+
+const getOrganizationForAdmin = async (adminId, organizationId) => {
+  const office = organizationId
+    ? await Office.findOne({ _id: organizationId, createdBy: adminId })
+    : await Office.findOne({ createdBy: adminId });
+
+  if (!office) {
+    throw new Error("Organization not found for this admin");
+  }
+
+  return office;
+};
+
+const buildDashboardPayload = async (office) => {
+  const queueEntries = await Queue.find({
+    organizationId: office._id,
+    status: { $in: ACTIVE_QUEUE_STATUSES }
+  })
+    .populate("userId", "name")
+    .sort({ tokenNumber: 1 })
+    .lean();
+
+  const upcoming = queueEntries
+    .filter((entry) => entry.status === "waiting")
+    .slice(0, 3)
+    .map((entry) => `#${entry.tokenNumber}`);
+
+  return {
+    office: {
+      _id: office._id,
+      organizationId: office.organizationId ?? String(office._id),
+      name: office.name,
+      category: office.category,
+      location: office.location,
+      avgServiceTime: office.avgServiceTime ?? office.avgWaitingTime,
+      maxQueueLimit: office.maxQueueLimit ?? office.queueLimit,
+      swapEnabled: office.swapEnabled,
+      maxSwapsPerUser: office.maxSwapsPerUser,
+      queueStatus: office.queueStatus,
+      currentToken: office.currentToken
+    },
+    activeQueues: 1,
+    totalWaiting: queueEntries.length,
+    avgServiceTime: office.avgServiceTime ?? office.avgWaitingTime,
+    currentToken: office.currentToken,
+    upcoming,
+    users: queueEntries.map((entry) => ({
+      id: entry._id,
+      name: entry.userId?.name ?? "Unknown User",
+      tokenNumber: entry.tokenNumber,
+      status: entry.status
+    }))
+  };
+};
+
+export const createOrganization = async (req, res) => {
   try {
-    // test
     const adminId = req.user.id;
-    const { name, location, operatingHours, counters } = req.body;
+    const {
+      organizationName,
+      category,
+      location,
+      avgServiceTime,
+      maxQueueLimit,
+      swapEnabled = true,
+      maxSwapsPerUser = 2
+    } = req.body;
 
-    let office = await Office.findOne({ admin: adminId });
-
-    if (!office) {
-      office = await Office.create({
-        admin: adminId,
-        name,
-        location,
-        operatingHours,
-        counters
-      });
-
-      return res.status(201).json({
-        message: "Office created",
-        office
+    const existingOrganization = await Office.findOne({ createdBy: adminId });
+    if (existingOrganization) {
+      return res.status(400).json({
+        message: "This admin can create only one organization"
       });
     }
 
-    office.name = name || office.name;
-    office.location = location || office.location;
-    office.operatingHours = operatingHours || office.operatingHours;
-    office.counters = counters || office.counters;
+    const office = await Office.create({
+      admin: adminId,
+      createdBy: adminId,
+      name: organizationName,
+      category,
+      location,
+      avgServiceTime,
+      avgWaitingTime: avgServiceTime,
+      maxQueueLimit,
+      queueLimit: maxQueueLimit,
+      swapEnabled,
+      maxSwapsPerUser,
+      queueStatus: "active",
+      operatingHours: "9:00 AM - 5:00 PM",
+      counters: 1
+    });
 
+    office.organizationId = String(office._id);
     await office.save();
 
-    res.json({
-      message: "Office updated",
+    res.status(201).json({
+      message: "Organization created",
       office
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* GET DASHBOARD */
+export const getAdminOrganizations = async (req, res) => {
+  try {
+    const organizations = await Office.find({ createdBy: req.user.id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(
+      organizations.map((office) => ({
+        _id: office._id,
+        organizationId: office.organizationId ?? String(office._id),
+        name: office.name,
+        category: office.category,
+        location: office.location,
+        avgServiceTime: office.avgServiceTime ?? office.avgWaitingTime,
+        maxQueueLimit: office.maxQueueLimit ?? office.queueLimit,
+        swapEnabled: office.swapEnabled,
+        maxSwapsPerUser: office.maxSwapsPerUser,
+        queueStatus: office.queueStatus,
+        currentToken: office.currentToken
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getDashboard = async (req, res) => {
   try {
-    const office = await Office.findOne({ admin: req.user.id });
+    const office = await getOrganizationForAdmin(
+      req.user.id,
+      req.query.organizationId
+    );
 
-    if (!office)
-      return res.status(404).json({ message: "No office found" });
-
-    const totalWaiting = await Queue.countDocuments({
-      office: office._id,
-      status: "waiting"
-    });
-
-    const nextToken = await Queue.findOne({
-      office: office._id,
-      status: "waiting"
-    }).sort({ tokenNumber: 1 });
-
-    const totalWaitingTime =
-      totalWaiting * office.avgWaitingTime;
-
-    res.json({
-      office,
-      totalWaiting,
-      totalWaitingTime,
-      currentToken: office.currentToken,
-      nextToken
-    });
-
+    res.json(await buildDashboardPayload(office));
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(404).json({ message: error.message });
   }
 };
 
-/* CALL NEXT TOKEN */
 export const callNext = async (req, res) => {
   try {
-    const office = await Office.findOne({ admin: req.user.id });
+    const office = await getOrganizationForAdmin(
+      req.user.id,
+      req.body.organizationId
+    );
+
+    const currentServing = await Queue.findOne({
+      organizationId: office._id,
+      status: "serving"
+    });
+
+    if (currentServing) {
+      currentServing.status = "completed";
+      await currentServing.save();
+    }
 
     const next = await Queue.findOne({
-      office: office._id,
+      organizationId: office._id,
       status: "waiting"
     }).sort({ tokenNumber: 1 });
 
-    if (!next)
+    if (!next) {
       return res.json({ message: "No one in queue" });
+    }
 
-    next.status = "served";
+    next.status = "serving";
     await next.save();
 
     office.currentToken = next.tokenNumber;
     await office.save();
+    await broadcastQueueState(office._id);
 
     res.json({
       message: "Next token called",
-      token: next
+      token: next,
+      dashboard: await buildDashboardPayload(office)
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
-/* PAUSE OR RESUME */
-export const togglePause = async (req, res) => {
+export const updateQueueStatus = async (req, res) => {
   try {
-    const office = await Office.findOne({ admin: req.user.id });
+    const { organizationId, queueStatus } = req.body;
+    const allowedStatuses = ["active", "paused", "closed"];
 
-    office.isPaused = !office.isPaused;
+    if (!allowedStatuses.includes(queueStatus)) {
+      return res.status(400).json({ message: "Invalid queueStatus" });
+    }
+
+    const office = await getOrganizationForAdmin(req.user.id, organizationId);
+    office.queueStatus = queueStatus;
+    office.isPaused = queueStatus === "paused";
     await office.save();
+    await broadcastQueueState(office._id);
 
     res.json({
-      paused: office.isPaused
+      message: `Queue ${queueStatus}`,
+      office
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
-/* UPDATE SETTINGS */
 export const updateSettings = async (req, res) => {
   try {
-    const { queueLimit, avgWaitingTime } = req.body;
+    const {
+      organizationId,
+      maxQueueLimit,
+      avgServiceTime,
+      swapEnabled,
+      maxSwapsPerUser
+    } = req.body;
 
-    const office = await Office.findOne({ admin: req.user.id });
+    const office = await getOrganizationForAdmin(req.user.id, organizationId);
 
-    if (queueLimit !== undefined)
-      office.queueLimit = queueLimit;
+    if (maxQueueLimit !== undefined) {
+      office.maxQueueLimit = maxQueueLimit;
+      office.queueLimit = maxQueueLimit;
+    }
 
-    if (avgWaitingTime !== undefined)
-      office.avgWaitingTime = avgWaitingTime;
+    if (avgServiceTime !== undefined) {
+      office.avgServiceTime = avgServiceTime;
+      office.avgWaitingTime = avgServiceTime;
+    }
+
+    if (swapEnabled !== undefined) {
+      office.swapEnabled = swapEnabled;
+    }
+
+    if (maxSwapsPerUser !== undefined) {
+      office.maxSwapsPerUser = maxSwapsPerUser;
+    }
 
     await office.save();
+    await broadcastQueueState(office._id);
 
     res.json({
       message: "Settings updated",
       office
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };

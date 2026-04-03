@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ElectricBorder from "../components/ElectricBorder";
+import GlitchText from "../components/GlitchText";
 
 export default function ActivityRoom() {
   const mockNewsData = [
@@ -133,7 +134,20 @@ export default function ActivityRoom() {
       <header className="max-w-[1600px] mx-auto flex justify-between items-end mb-10 mt-28 md:mt-32 relative z-10">
         <div className="text-left">
           <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-gray-900 leading-none">
-            Activity <span className="text-emerald-600">Room</span>
+            <GlitchText
+              speed={0.8}
+              enableOnHover={false}
+              className="text-gray-900"
+            >
+              Activity
+            </GlitchText>{" "}
+            <GlitchText
+              speed={1}
+              enableOnHover={false}
+              className="text-emerald-600"
+            >
+              Room
+            </GlitchText>
           </h1>
           <p className="text-gray-500 font-bold text-sm mt-1">Wait smart. Play hard.</p>
         </div>

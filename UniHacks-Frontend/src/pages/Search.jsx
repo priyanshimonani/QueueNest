@@ -1,63 +1,97 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import CurvedLoop from "../components/CurvedLoop";
 import ElectricBorder from "../components/ElectricBorder";
 
+const API_BASE = "http://localhost:8080/api";
+const categories = ["All", "Bank", "Hospital", "Government", "Education", "Utilities"];
+
+const getCategory = (name = "") => {
+  const value = name.toLowerCase();
+  if (value.includes("bank") || value.includes("sbi") || value.includes("hdfc") || value.includes("icici")) return "Bank";
+  if (value.includes("hospital") || value.includes("clinic")) return "Hospital";
+  if (value.includes("passport") || value.includes("rto")) return "Government";
+  if (value.includes("university")) return "Education";
+  if (value.includes("electricity")) return "Utilities";
+  return "All";
+};
+
 const Search = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState("All");
   const [sortBy, setSortBy] = useState("default");
   const [offices, setOffices] = useState([]);
 
-  const categories = ["All", "Bank", "Hospital", "Government", "Education", "Utilities"];
-
-  const dummyOffices = [
-    { _id: "1", name: "SBI Main Branch", location: "Mumbai", tags: ["bank"], queueLength: 12, estimatedWaitTime: 25, currentToken: 104 },
-    { _id: "2", name: "HDFC Bank Branch", location: "Mumbai", tags: ["bank"], queueLength: 8, estimatedWaitTime: 18, currentToken: 56 },
-    { _id: "3", name: "ICICI Bank", location: "Mumbai", tags: ["bank"], queueLength: 15, estimatedWaitTime: 30, currentToken: 89 },
-    { _id: "4", name: "City Care Hospital", location: "Mumbai", tags: ["hospital"], queueLength: 20, estimatedWaitTime: 40, currentToken: 210 },
-    { _id: "5", name: "Apollo Clinic", location: "Mumbai", tags: ["hospital"], queueLength: 6, estimatedWaitTime: 12, currentToken: 23 },
-    { _id: "7", name: "Passport Office", location: "Mumbai", tags: ["government"], queueLength: 9, estimatedWaitTime: 20, currentToken: 72 },
-    { _id: "10", name: "RTO Mumbai Central", location: "Mumbai", tags: ["government"], queueLength: 10, estimatedWaitTime: 22, currentToken: 67 },
-    { _id: "11", name: "Mumbai University", location: "Mumbai", tags: ["education"], queueLength: 7, estimatedWaitTime: 15, currentToken: 48 },
-    { _id: "15", name: "Electricity Board", location: "Mumbai", tags: ["utilities"], queueLength: 16, estimatedWaitTime: 32, currentToken: 120 }
-  ];
-
   useEffect(() => {
     const fetchOffices = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/offices");
+        const response = await fetch(`${API_BASE}/queue/organizations`);
         const data = await response.json();
-        setOffices(data && data.length > 0 ? data : dummyOffices);
-      } catch (error) {
-        setOffices(dummyOffices);
+        setOffices(Array.isArray(data) ? data : []);
+      } catch {
+        setOffices([]);
       }
     };
 
     fetchOffices();
   }, []);
 
-  const processedOffices = offices
-    .filter(office => {
-      const matchesSearch =
-        office.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        office.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTag = activeTag === "All" || office.tags?.some(tag => tag.toLowerCase() === activeTag.toLowerCase());
-      return matchesSearch && matchesTag;
-    })
-    .sort((a, b) => {
-      if (sortBy === "wait") return a.estimatedWaitTime - b.estimatedWaitTime;
-      if (sortBy === "queue") return a.queueLength - b.queueLength;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return 0;
-    });
+  const processedOffices = useMemo(() => {
+    return offices
+      .map((office) => ({ ...office, category: getCategory(office.name) }))
+      .filter((office) => {
+        const matchesSearch =
+          office.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          office.location.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesTag = activeTag === "All" || office.category === activeTag;
+        return matchesSearch && matchesTag;
+      })
+      .sort((a, b) => {
+        if (sortBy === "wait") return a.estimatedWaitTime - b.estimatedWaitTime;
+        if (sortBy === "queue") return a.queueLength - b.queueLength;
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        return 0;
+      });
+  }, [activeTag, offices, searchQuery, sortBy]);
+
+  const handleJoin = (officeId) => {
+    const destination = `/joinqueue?organizationId=${encodeURIComponent(officeId)}`;
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate(destination);
+      return;
+    }
+
+    navigate(`/login?redirect=${encodeURIComponent(destination)}`);
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#feffe0] text-gray-800 relative overflow-x-hidden flex flex-col items-center">
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="findQueueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#111827" />
+            <stop offset="45%" stopColor="#111827" />
+            <stop offset="55%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+      </svg>
       <div className="container mx-auto mt-36 md:mt-40 px-4 max-w-[1400px] relative z-10 flex flex-col items-center">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-gray-900 mb-1">
-            Find <span className="text-[#10b981]">Queue</span>
-          </h1>
+          <div className="mx-auto w-full max-w-4xl">
+            <CurvedLoop
+              marqueeText="Find Queue"
+              speed={1.3}
+              curveAmount={80}
+              interactive={false}
+              jacketClassName="min-h-0"
+              className="curved-loop-find"
+            />
+          </div>
         </div>
 
         <div className="w-full max-w-4xl flex flex-col md:flex-row gap-3 mb-6 items-center justify-center">
@@ -71,7 +105,7 @@ const Search = () => {
               type="text"
               placeholder="Search offices..."
               value={searchQuery}
-              onChange={event => setSearchQuery(event.target.value)}
+              onChange={(event) => setSearchQuery(event.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm outline-none focus:border-emerald-400 font-bold text-sm transition-all"
             />
           </div>
@@ -79,7 +113,7 @@ const Search = () => {
           <div className="w-full md:w-1/3">
             <select
               value={sortBy}
-              onChange={event => setSortBy(event.target.value)}
+              onChange={(event) => setSortBy(event.target.value)}
               className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm font-black text-xs text-emerald-600 outline-none cursor-pointer"
             >
               <option value="default">SORT BY: RELEVANCE</option>
@@ -91,7 +125,7 @@ const Search = () => {
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mb-10 overflow-x-auto py-1 max-w-full">
-          {categories.map(category => (
+          {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveTag(category)}
@@ -108,7 +142,7 @@ const Search = () => {
 
         <motion.div layout className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-20">
           <AnimatePresence mode="popLayout">
-            {processedOffices.map(office => (
+            {processedOffices.map((office) => (
               <motion.div
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -124,7 +158,7 @@ const Search = () => {
                         <p className="text-[10px] font-black text-gray-400 uppercase">{office.location}</p>
                       </div>
                       <div className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[10px] font-black border border-emerald-100">
-                        #{office.currentToken}
+                        #{office.currentToken || 0}
                       </div>
                     </div>
 
@@ -140,9 +174,7 @@ const Search = () => {
                     </div>
 
                     <button
-                      onClick={() => {
-                        window.location.href = localStorage.getItem("token") ? "/joinqueue" : "/login";
-                      }}
+                      onClick={() => handleJoin(office._id)}
                       className="mt-auto w-full py-2.5 rounded-xl bg-gray-900 text-white font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all active:scale-95"
                     >
                       Join Queue
@@ -153,17 +185,15 @@ const Search = () => {
             ))}
           </AnimatePresence>
         </motion.div>
-
-        {processedOffices.length === 0 && (
-          <div className="text-center py-20 bg-white/50 rounded-3xl w-full border border-dashed border-gray-200">
-            <h2 className="text-xl font-black text-gray-300">NO RESULTS FOUND</h2>
-          </div>
-        )}
       </div>
-
       <style>{`
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        .curved-loop-find {
+          fill: url(#findQueueGradient);
+          font-size: clamp(2.8rem, 8vw, 6rem);
+          letter-spacing: -0.06em;
+          font-weight: 900;
+          text-transform: none;
+        }
       `}</style>
     </div>
   );

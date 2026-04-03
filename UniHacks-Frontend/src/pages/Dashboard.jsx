@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react"
+import CountUp from "../components/CountUp"
 import TrueFocus from "../components/TrueFocus"
 
 const Dashboard = () => {
@@ -133,6 +134,18 @@ const Dashboard = () => {
   </svg>
 </div>
      
+
+        <div className="absolute right-[7%] top-1/2 hidden -translate-y-1/2 pointer-events-none lg:block z-10">
+          <CountUp
+            from={0}
+            to={50}
+            duration={2.3}
+            repeat={true}
+            repeatDelay={1.4}
+            startWhen={true}
+            className="hero-countup text-[8rem] font-black leading-none tracking-[-0.08em] text-emerald-500/18"
+          />
+        </div>
 
         <div className="relative z-10 flex flex-col items-center">
           {/* 4. Glowing Logo */}
@@ -433,6 +446,14 @@ const Dashboard = () => {
           border-radius: 9999px;
           font-weight: 700;
           transition: all 0.3s ease;
+        }
+        @keyframes float-card {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .hero-countup {
+          animation: float-card 5.5s ease-in-out infinite;
+          text-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
         }
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(0); }

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import queueRoutes from "./routes/queueRoutes.js";
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/queue", queueRoutes);
 
 const PORT = process.env.PORT || 8080;
 const MONGO_URI =

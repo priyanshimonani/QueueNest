@@ -1,9 +1,10 @@
 import express from "express";
 import {
-  createOrUpdateOffice,
+  createOrganization,
+  getAdminOrganizations,
   getDashboard,
   callNext,
-  togglePause,
+  updateQueueStatus,
   updateSettings
 } from "../controllers/adminController.js";
 
@@ -11,10 +12,11 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/office", protect, adminOnly, createOrUpdateOffice);
+router.post("/organizations", protect, adminOnly, createOrganization);
+router.get("/organizations", protect, adminOnly, getAdminOrganizations);
 router.get("/dashboard", protect, adminOnly, getDashboard);
 router.post("/call-next", protect, adminOnly, callNext);
-router.post("/pause", protect, adminOnly, togglePause);
+router.post("/status", protect, adminOnly, updateQueueStatus);
 router.put("/settings", protect, adminOnly, updateSettings);
 
 export default router;

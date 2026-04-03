@@ -172,7 +172,7 @@ body{
     }
 }
 
-form{
+#loginform{
     height: 550px;
     width: 400px;
     background-color: rgba(255,255,255,0.13);
@@ -186,14 +186,14 @@ form{
     border-color: #ffffff;
     padding: 50px 35px;
 }
-form *{
+#loginform *{
     font-family: 'Poppins',sans-serif;
     color: #000000;
     letter-spacing: 0.5px;
     outline: none;
     border: none;
 }
-form h3{
+#loginform h3{
     font-size: 32px;
     font-weight: 500;
     line-height: 42px;

@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/Admin-Dashboard"
 import Notifications from "./pages/Notifications"
 import { TokenSwap } from "./pages/User-TokenSwap"
 import ActivityRoom from "./pages/ActivityRoom"
+import QueueDemo from "./pages/QueueDemo"
 
 function Layout() {
   return (
@@ -26,6 +27,7 @@ function Layout() {
         <Route path="/signupadmin" element={<SignUpAdmin />} />
         <Route path="/loginadmin" element={<LoginAdmin />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/queue-demo" element={<QueueDemo />} />
         <Route path="/ar" element={<ActivityRoom />} />
         {/* <Route path="/profile" element={<Profile />} /> */}
         <Route path="/notifications" element={<Notifications />} />

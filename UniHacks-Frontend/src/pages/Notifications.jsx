@@ -1,199 +1,237 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import ElectricBorder from "../components/ElectricBorder";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
-  Bell,
-  CheckCircle,
-  Clock,
   AlertCircle,
-  Repeat,
-  Check
+  Bell,
+  CheckCircle2,
+  Clock3,
+  Info,
+  Sparkles
 } from "lucide-react";
+import CurvedLoop from "../components/CurvedLoop";
+
+const API_BASE = "http://localhost:8080/api";
+
+const typeStyles = {
+  info: {
+    icon: Info,
+    iconWrap: "bg-sky-100 text-sky-600",
+    ring: "border-sky-200"
+  },
+  success: {
+    icon: CheckCircle2,
+    iconWrap: "bg-emerald-100 text-emerald-600",
+    ring: "border-emerald-200"
+  },
+  warning: {
+    icon: Clock3,
+    iconWrap: "bg-amber-100 text-amber-600",
+    ring: "border-amber-200"
+  },
+  alert: {
+    icon: AlertCircle,
+    iconWrap: "bg-rose-100 text-rose-500",
+    ring: "border-rose-200"
+  }
+};
+
+const formatRelativeTime = (dateString) => {
+  const timestamp = new Date(dateString).getTime();
+  const diff = Date.now() - timestamp;
+  const minutes = Math.max(1, Math.floor(diff / 60000));
+
+  if (minutes < 60) {
+    return `${minutes} min${minutes === 1 ? "" : "s"} ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+};
 
 export default function Notifications() {
+  const token = localStorage.getItem("token");
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Mock Data
-  const mockNotifications = [
-    {
-      id: 1,
-      type: "turn_soon",
-      title: "Your turn is near",
-      message: "Only 3 people ahead of you. Please be ready.",
-      time: "2 mins ago",
-      read: false
-    },
-    {
-      id: 2,
-      type: "swap_success",
-      title: "Swap successful",
-      message: "Your token swap request has been accepted.",
-      time: "10 mins ago",
-      read: true
-    },
-    {
-      id: 3,
-      type: "queue_paused",
-      title: "Queue paused",
-      message: "The queue has been temporarily paused by admin.",
-      time: "30 mins ago",
-      read: true
+  const authHeaders = useMemo(
+    () =>
+      token
+        ? {
+            Authorization: `Bearer ${token}`
+          }
+        : null,
+    [token]
+  );
+
+  const fetchNotifications = async () => {
+    if (!authHeaders) {
+      setError("Please login to view your notifications.");
+      setLoading(false);
+      return;
     }
-  ];
 
-  // Helper to get styles based on type
-  const getNotificationStyle = (type) => {
-    switch (type) {
-      case "swap_success":
-      case "swap_accepted":
-        return {
-          icon: <CheckCircle className="w-6 h-6" />,
-          colorClass: "text-[#10b981]",
-          bgClass: "bg-emerald-100",
-          borderClass: "group-hover:border-[#10b981]"
-        };
-      case "turn_soon":
-        return {
-          icon: <Clock className="w-6 h-6" />,
-          colorClass: "text-amber-500",
-          bgClass: "bg-amber-100",
-          borderClass: "group-hover:border-amber-500"
-        };
-      case "queue_paused":
-        return {
-          icon: <AlertCircle className="w-6 h-6" />,
-          colorClass: "text-red-500",
-          bgClass: "bg-red-100",
-          borderClass: "group-hover:border-red-500"
-        };
-      case "swap_request":
-        return {
-          icon: <Repeat className="w-6 h-6" />,
-          colorClass: "text-purple-500",
-          bgClass: "bg-purple-100",
-          borderClass: "group-hover:border-purple-500"
-        };
-      default:
-        return {
-          icon: <Bell className="w-6 h-6" />,
-          colorClass: "text-indigo-500",
-          bgClass: "bg-indigo-100",
-          borderClass: "group-hover:border-indigo-500"
-        };
+    try {
+      setError("");
+      const response = await fetch(`${API_BASE}/queue/notifications`, {
+        headers: authHeaders
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.message || "Unable to load notifications");
+      }
+
+      setNotifications(Array.isArray(payload) ? payload : []);
+    } catch (nextError) {
+      setError(nextError.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchNotifications();
+  }, [token]);
+
+  useEffect(() => {
+    if (!authHeaders) return undefined;
+
+    const interval = setInterval(fetchNotifications, 8000);
+    return () => clearInterval(interval);
+  }, [authHeaders]);
+
   return (
-    <div className="min-h-screen pt-36 md:pt-40 pb-20 bg-gradient-to-br from-[#feffe0] via-yellow-50 to-orange-50 relative overflow-hidden font-sans text-gray-800">
-
-      {/* Background Blobs */}
-      <div className="fixed top-0 left-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob -z-10"></div>
-      <div className="fixed top-0 right-0 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000 -z-10"></div>
-      <div className="fixed -bottom-32 left-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 -z-10"></div>
-
-      <div className="max-w-[92rem] mx-auto px-6 md:px-10 relative z-10">
-
-        {/* Header Section */}
-        <div className="flex items-center justify-start mb-10">
-          <div className="flex items-center gap-4">
-             <Link to="/search">
-              <button className="p-3 bg-white/60 backdrop-blur-md border border-white/60 rounded-xl hover:bg-white hover:shadow-md transition-all group">
-                <ArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
-              </button>
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-[#fefce8] via-[#fffdf4] to-[#ecfdf5] px-6 pb-20 pt-28 text-gray-900">
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="notificationsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0f172a" />
+            <stop offset="36%" stopColor="#0f172a" />
+            <stop offset="44%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-10 rounded-[2.75rem] border border-white/70 bg-white/80 px-8 py-8 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-[11px] font-black uppercase tracking-[0.25em] text-emerald-700">
+            <Sparkles className="h-4 w-4" />
+            Alerts Center
+          </div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-none">Notifications</h1>
-            </div>
-          </div>
-          
-          
-        </div>
-
-        {/* Notifications List */}
-        <div className="space-y-6">
-          {mockNotifications.map((notification) => {
-            const styles = getNotificationStyle(notification.type);
-            
-            return (
-              <ElectricBorder
-                key={notification.id}
-                color={notification.type === "turn_soon" ? "#ffe483" : notification.type === "queue_paused" ? "#ffd7dd" : "#b8f2df"}
-                borderRadius={28}
-                speed={0.95}
-                chaos={0.07}
-                className="rounded-3xl"
-              >
-              <div
-                className={`group relative w-full bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-6 md:p-7 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${!notification.read ? 'ring-2 ring-emerald-400/30' : ''}`}
-              >
-                {/* Unread Dot Indicator */}
-                {!notification.read && (
-                  <span className="absolute top-5 right-5 w-3 h-3 bg-[#10b981] rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></span>
-                )}
-
-                <div className="flex items-start gap-5">
-                  
-                  {/* Icon Box */}
-                  <div className={`shrink-0 w-14 h-14 ${styles.bgClass} ${styles.colorClass} rounded-2xl flex items-center justify-center shadow-inner`}>
-                    {styles.icon}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 pt-1">
-                    <div className="flex justify-between items-start mb-1 pr-6">
-                      <h3 className={`font-bold text-lg ${!notification.read ? 'text-gray-900' : 'text-gray-600'}`}>
-                        {notification.title}
-                      </h3>
-                    </div>
-
-                    <p className="text-gray-500 leading-relaxed text-sm mb-3">
-                      {notification.message}
-                    </p>
-
-                    <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wide">
-                      <Clock className="w-3 h-3" />
-                      {notification.time}
-                    </div>
-                  </div>
-                </div>
+              <div className="w-full max-w-3xl">
+                <CurvedLoop
+                  marqueeText="Your Notifications"
+                  speed={1.1}
+                  curveAmount={72}
+                  interactive={false}
+                  jacketClassName="min-h-0 justify-start"
+                  className="curved-loop-notifications"
+                />
               </div>
-              </ElectricBorder>
-            );
-          })}
-        </div>
-
-        {/* Empty State */}
-        {mockNotifications.length === 0 && (
-          <div className="bg-white/50 backdrop-blur-md rounded-[2.5rem] p-12 text-center mt-10 border border-white/50 shadow-lg">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
-              🔔
+              <p className="mt-3 text-sm font-medium text-gray-500 md:text-base">
+                Queue updates, swap confirmations, and important alerts appear here.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              All caught up!
-            </h3>
-            <p className="text-gray-500">
-              You have no new notifications at the moment.
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-black text-white">
+              <Bell className="h-4 w-4" />
+              {notifications.length} updates
+            </div>
           </div>
-        )}
+        </header>
 
+        {error ? (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            <AlertCircle className="h-4 w-4" />
+            {error}
+          </div>
+        ) : null}
+
+        <section className="space-y-5">
+          {loading ? (
+            [1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="h-36 animate-pulse rounded-[2rem] border border-white/80 bg-white/70 shadow-sm"
+              />
+            ))
+          ) : notifications.length ? (
+            notifications.map((notification, index) => {
+              const style = typeStyles[notification.type] ?? typeStyles.info;
+              const Icon = style.icon;
+              const highlighted = index === 0;
+
+              return (
+                <article
+                  key={notification._id}
+                  className={`rounded-[2rem] border bg-white/90 p-6 shadow-sm transition hover:shadow-lg ${
+                    highlighted ? style.ring : "border-gray-100"
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${style.iconWrap}`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h2 className="text-2xl font-black text-gray-900">
+                            {notification.title}
+                          </h2>
+                          <p className="mt-2 text-base text-gray-500">
+                            {notification.message}
+                          </p>
+                          {notification.organizationName ? (
+                            <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-gray-400">
+                              {notification.organizationName}
+                              {notification.organizationLocation
+                                ? ` • ${notification.organizationLocation}`
+                                : ""}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        {highlighted ? (
+                          <div className="mt-1 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.65)]" />
+                        ) : null}
+                      </div>
+
+                      <div className="mt-4 flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-gray-400">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {formatRelativeTime(notification.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="rounded-[2rem] border border-dashed border-emerald-200 bg-white/70 p-10 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <Bell className="h-7 w-7" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900">No notifications yet</h2>
+              <p className="mt-3 text-sm font-medium text-gray-500">
+                When you join a queue or receive queue updates, they will appear here.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
-
       <style>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
+        .curved-loop-notifications {
+          fill: url(#notificationsGradient);
+          font-size: clamp(2.5rem, 7vw, 5rem);
+          letter-spacing: -0.06em;
+          font-weight: 900;
+          text-transform: none;
         }
       `}</style>
     </div>
