@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRightLeft, Building2, CircleAlert, Clock3, Ticket, Users } from "lucide-react";
+import confetti from "canvas-confetti";
 
 const API_BASE = "http://localhost:8080/api";
 
@@ -9,6 +10,7 @@ const QueueDemo = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
+  const confettiTriggeredRef = useRef(false);
 
   const [organizations, setOrganizations] = useState([]);
   const [state, setState] = useState(null);
@@ -96,6 +98,20 @@ const QueueDemo = () => {
 
     return () => source.close();
   }, [organizationId, token]);
+
+  useEffect(() => {
+    const currentMyEntry = state?.myEntry;
+    if (currentMyEntry?.status === "serving" && !confettiTriggeredRef.current) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      confettiTriggeredRef.current = true;
+    } else if (currentMyEntry?.status !== "serving") {
+      confettiTriggeredRef.current = false;
+    }
+  }, [state?.myEntry?.status]);
 
   const runAction = async (label, url, options = {}) => {
     if (!authHeaders) return;

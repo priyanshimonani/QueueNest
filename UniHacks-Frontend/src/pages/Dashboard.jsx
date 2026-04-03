@@ -151,7 +151,7 @@ const Dashboard = () => {
           {/* 4. Glowing Logo */}
           <div className="hero-title mb-6 filter drop-shadow-sm">
             <TrueFocus
-              sentence="Quenest"
+              sentence="QueNest"
               separator=""
               blurAmount={2}
               borderColor="#10b981"

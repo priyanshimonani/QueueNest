@@ -150,7 +150,7 @@ const Search = () => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 key={office._id}
               >
-                <ElectricBorder color="#d8fbe8" borderRadius={24} speed={0.95} chaos={0.07} className="rounded-[1.5rem]">
+                
                   <div className="group bg-white border border-gray-100 rounded-[1.5rem] p-5 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1 truncate">
@@ -180,7 +180,7 @@ const Search = () => {
                       Join Queue
                     </button>
                   </div>
-                </ElectricBorder>
+                
               </motion.div>
             ))}
           </AnimatePresence>

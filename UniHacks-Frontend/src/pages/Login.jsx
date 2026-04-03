@@ -33,8 +33,8 @@ const Login = () => {
         </div>
 
         <form id="loginform">
-          <h3 className="title1">Login</h3>
-
+          
+<h3 className="title1">Login</h3>
           <label>Email</label>
           <input
             type="text"

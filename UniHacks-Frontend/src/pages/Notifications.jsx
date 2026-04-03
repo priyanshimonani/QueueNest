@@ -125,15 +125,8 @@ export default function Notifications() {
           </div>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="w-full max-w-3xl">
-                <CurvedLoop
-                  marqueeText="Your Notifications"
-                  speed={1.1}
-                  curveAmount={72}
-                  interactive={false}
-                  jacketClassName="min-h-0 justify-start"
-                  className="curved-loop-notifications"
-                />
+              <div className="w-full max-w-3xl title1">
+                Notifications
               </div>
               <p className="mt-3 text-sm font-medium text-gray-500 md:text-base">
                 Queue updates, swap confirmations, and important alerts appear here.

@@ -1,6 +1,7 @@
 import Office from "../models/Office.js";
 import Queue from "../models/Queue.js";
 import { broadcastQueueState } from "./queueController.js";
+import { createNotification } from "../services/notificationService.js";
 
 const ACTIVE_QUEUE_STATUSES = ["waiting", "serving"];
 
@@ -177,6 +178,15 @@ export const callNext = async (req, res) => {
 
     office.currentToken = next.tokenNumber;
     await office.save();
+
+    await createNotification({
+      userId: next.userId,
+      organizationId: office._id,
+      type: "success",
+      title: "Your turn!",
+      message: `It's your turn! Please proceed to the counter. Token #${next.tokenNumber}`
+    });
+
     await broadcastQueueState(office._id);
 
     res.json({
