@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import confetti from "canvas-confetti"
+import ElectricBorder from "../components/ElectricBorder"
 
 export function JoinQueue() {
 
@@ -99,11 +100,12 @@ export function JoinQueue() {
         </motion.div>
 
         {/* Token Card */}
+        <ElectricBorder color="#b8f2df" borderRadius={40} speed={0.9} chaos={0.08} className="rounded-[2.5rem] mb-8">
         <motion.div
           layout
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`relative bg-white/60 backdrop-blur-2xl border border-white/60 rounded-[2.5rem] p-8 text-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] mb-8 overflow-hidden group transition-all duration-500 ${isYourTurn ? "ring-4 ring-emerald-400/30" : ""}`}
+          className={`relative bg-white/60 backdrop-blur-2xl border border-white/60 rounded-[2.5rem] p-8 text-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden group transition-all duration-500 ${isYourTurn ? "ring-4 ring-emerald-400/30" : ""}`}
         >
           {/* Subtle glow behind number */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-400/20 blur-[60px] rounded-full group-hover:bg-emerald-400/30 transition-all duration-700"></div>
@@ -148,6 +150,7 @@ export function JoinQueue() {
           </div>
 
         </motion.div>
+        </ElectricBorder>
 
         {/* Status Message */}
         <motion.div
@@ -171,22 +174,30 @@ export function JoinQueue() {
   { label: "People Ahead", value: peopleAhead === 0 ? "None" : peopleAhead, icon: "👥" },
   { label: "Wait Time", value: peopleAhead === 0 ? "No wait" : `${estimatedWait} min`, icon: "⏱️" }
           ].map((item, index) => (
-            <motion.div
+            <ElectricBorder
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white/60 backdrop-blur-lg border border-white/60 rounded-2xl p-6 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              color={index === 0 ? "#b8f2df" : index === 1 ? "#d8fbe8" : "#ffe483"}
+              borderRadius={24}
+              speed={1}
+              chaos={0.07}
+              className="rounded-2xl"
             >
-              <div className="text-2xl mb-2">{item.icon}</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
-                {item.label}
-              </div>
-              <div className="text-3xl font-bold text-gray-800">
-                {item.value}
-              </div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white/60 backdrop-blur-lg border border-white/60 rounded-2xl p-6 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                  {item.label}
+                </div>
+                <div className="text-3xl font-bold text-gray-800">
+                  {item.value}
+                </div>
+              </motion.div>
+            </ElectricBorder>
           ))}
         </div>
 

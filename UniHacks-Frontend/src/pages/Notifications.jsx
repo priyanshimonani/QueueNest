@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import ElectricBorder from "../components/ElectricBorder";
 import {
   ArrowLeft,
   Bell,
@@ -83,17 +84,17 @@ export default function Notifications() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-gradient-to-br from-[#feffe0] via-yellow-50 to-orange-50 relative overflow-hidden font-sans text-gray-800">
+    <div className="min-h-screen pt-36 md:pt-40 pb-20 bg-gradient-to-br from-[#feffe0] via-yellow-50 to-orange-50 relative overflow-hidden font-sans text-gray-800">
 
       {/* Background Blobs */}
       <div className="fixed top-0 left-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob -z-10"></div>
       <div className="fixed top-0 right-0 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000 -z-10"></div>
       <div className="fixed -bottom-32 left-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 -z-10"></div>
 
-      <div className="max-w-2xl mx-auto px-6 relative z-10">
+      <div className="max-w-[92rem] mx-auto px-6 md:px-10 relative z-10">
 
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-start mb-10">
           <div className="flex items-center gap-4">
              <Link to="/search">
               <button className="p-3 bg-white/60 backdrop-blur-md border border-white/60 rounded-xl hover:bg-white hover:shadow-md transition-all group">
@@ -101,7 +102,7 @@ export default function Notifications() {
               </button>
             </Link>
             <div>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight">Notifications</h1>
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-none">Notifications</h1>
             </div>
           </div>
           
@@ -109,14 +110,21 @@ export default function Notifications() {
         </div>
 
         {/* Notifications List */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {mockNotifications.map((notification) => {
             const styles = getNotificationStyle(notification.type);
             
             return (
-              <div
+              <ElectricBorder
                 key={notification.id}
-                className={`group relative bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${!notification.read ? 'ring-2 ring-emerald-400/30' : ''}`}
+                color={notification.type === "turn_soon" ? "#ffe483" : notification.type === "queue_paused" ? "#ffd7dd" : "#b8f2df"}
+                borderRadius={28}
+                speed={0.95}
+                chaos={0.07}
+                className="rounded-3xl"
+              >
+              <div
+                className={`group relative w-full bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-6 md:p-7 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${!notification.read ? 'ring-2 ring-emerald-400/30' : ''}`}
               >
                 {/* Unread Dot Indicator */}
                 {!notification.read && (
@@ -149,6 +157,7 @@ export default function Notifications() {
                   </div>
                 </div>
               </div>
+              </ElectricBorder>
             );
           })}
         </div>

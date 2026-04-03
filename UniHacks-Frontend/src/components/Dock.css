@@ -1,0 +1,88 @@
+.dock-outer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-panel {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(250, 247, 230, 0.96));
+  border: 1px solid rgba(16, 185, 129, 0.16);
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  padding: 0 0.65rem 0.55rem;
+  backdrop-filter: blur(18px);
+}
+
+.dock-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff, #f8f5e5);
+  border: 1px solid rgba(16, 185, 129, 0.14);
+  color: #334155;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dock-item:hover,
+.dock-item:focus-visible {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow:
+    0 14px 28px rgba(16, 185, 129, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.dock-item-active {
+  border-color: rgba(16, 185, 129, 0.34);
+  color: #059669;
+  background: linear-gradient(180deg, #ffffff, #edfdf5);
+  box-shadow:
+    0 14px 28px rgba(16, 185, 129, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.dock-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-label {
+  position: absolute;
+  top: -2.2rem;
+  left: 50%;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f8fafc;
+  transform: translateX(-50%);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+@media (max-width: 768px) {
+  .dock-panel {
+    gap: 0.6rem;
+    padding: 0 0.5rem 0.45rem;
+  }
+}

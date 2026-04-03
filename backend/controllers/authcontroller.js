@@ -3,9 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Admin from "../models/admin.js";
 
+const JWT_SECRET = process.env.JWT_SECRET || "queue-dev-secret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  return jwt.sign({ id, role }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
   });
 };
 

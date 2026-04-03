@@ -8,11 +8,35 @@ import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 
 const app = express();
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174"
+]);
+
+const configuredOrigin = process.env.CLIENT_ORIGIN?.trim().replace(/\/+$/, "");
+if (configuredOrigin) {
+  allowedOrigins.add(configuredOrigin);
+}
 
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+
+      const normalizedOrigin = origin.replace(/\/+$/, "");
+      const isLocalhostVite =
+        /^http:\/\/localhost:517\d$/.test(normalizedOrigin) ||
+        /^http:\/\/127\.0\.0\.1:517\d$/.test(normalizedOrigin);
+
+      if (allowedOrigins.has(normalizedOrigin) || isLocalhostVite) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true
   })
 );

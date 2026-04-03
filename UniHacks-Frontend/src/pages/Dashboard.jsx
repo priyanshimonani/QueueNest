@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react"
+import TrueFocus from "../components/TrueFocus"
 
 const Dashboard = () => {
 
@@ -135,11 +136,17 @@ const Dashboard = () => {
 
         <div className="relative z-10 flex flex-col items-center">
           {/* 4. Glowing Logo */}
-          <h1 className="hero-title text-7xl md:text-9xl font-black tracking-tighter mb-6 filter drop-shadow-sm">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#059669] via-[#10b981] to-[#34d399] animate-gradient-x animate-logo-glow">
-              QueueNest
-            </span>
-          </h1>
+          <div className="hero-title mb-6 filter drop-shadow-sm">
+            <TrueFocus
+              sentence="Quenest"
+              separator=""
+              blurAmount={2}
+              borderColor="#10b981"
+              glowColor="rgba(16, 185, 129, 0.35)"
+              animationDuration={0.45}
+              pauseBetweenAnimations={0.2}
+            />
+          </div>
 
           {/* 5. Typing Effect Text */}
           <div className="overflow-hidden whitespace-nowrap mx-auto border-r-4 border-emerald-500 animate-typing w-fit">
@@ -148,12 +155,12 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <p className="text-gray-500 mt-8 mb-10 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '2.5s' }}>
+          <p className="text-gray-500 mt-6 mb-8 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '1.1s' }}>
             Join virtual queues, track your live position, and get your time back.
             The smartest way to handle lines is here.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 animate-bounce-in" style={{ animationDelay: '3s' }}>
+          <div className="flex flex-col sm:flex-row gap-6 animate-bounce-in" style={{ animationDelay: '1.35s' }}>
             <a href="/search">
               <button className="primary-btn group relative overflow-hidden animate-button-pulse">
                 <span className="relative z-10">Join Queue Now →</span>
@@ -312,7 +319,7 @@ const Dashboard = () => {
           50% { border-color: transparent }
         }
         .animate-typing {
-          animation: typing 2s steps(40, end), blink .75s step-end infinite;
+          animation: typing 1.1s steps(40, end), blink .75s step-end infinite;
           white-space: nowrap;
           overflow: hidden;
         }
